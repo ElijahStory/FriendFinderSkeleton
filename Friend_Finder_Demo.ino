@@ -10,28 +10,54 @@
 // AirLocate UUID: E2C56DB5-DFFB-48D2-B060-D0F5A71096E0
 uint8_t beaconUuid[16] = 
 { 
-  0xE2, 0xC5, 0x6D, 0xB5, 0xDF, 0xFB, 0x48, 0xD2, 
-  0xB0, 0x60, 0xD0, 0xF5, 0xA7, 0x10, 0x96, 0xE0, 
+  0x14, 0xFF, 0x6F, 0xB5, 0xDF, 0xFB, 0x48, 0xD2, 
+  0xB0, 0x60, 0xD0, 0xF5, 0xA7, 0x10, 0x45, 0xE0, 
 };
 
 
 
 // A valid Beacon packet consists of the following information:
 // UUID, Major, Minor, RSSI @ 1M
-BLEBeacon beacon(beaconUuid, 0x0001, 0x0000, -54);
+BLEBeacon beacon(beaconUuid, 0x000A, 0x0000, -54);
  
 void scan_callback(ble_gap_evt_adv_report_t *report)
 {
-  // does p_data contain the bluetooth UUID?
-  Serial.println(report->data.p_data[3]);
-  Serial.println(report->data.len);
-  Serial.println();
 
-  // Check if advertising contain BleUart service
-  if ( Bluefruit.Scanner.checkReportForUuid(report, BLEUART_UUID_SERVICE) )
-  {
-    Serial.println("                       BLE UART service detected");
+  uint16_t manufacturer;
+  
+  uint8_t  beacon_type;
+  uint8_t  beacon_len;
+
+  uint8_t  uuid128[16];
+  uint16_t major;
+  uint16_t minor;
+  int8_t   rssi_at_1m;
+  // This section is straight up WRONG
+  manufacturer = (report->data.p_data[3] << 16) | (report->data.p_data[2]);
+  beacon_type = report->data.p_data[4];
+  // MAJOR bytes: 22, 23 MINOR bytes: 24, 25)
+  major = (report->data.p_data[22] << 16) | (report->data.p_data[23]);
+  minor = (report->data.p_data[24] << 16) | (report->data.p_data[25]);
+  
+  Serial.print("man: ");
+  Serial.println(manufacturer, HEX);
+  Serial.print("Type: ");
+  Serial.println(beacon_type, HEX);
+  Serial.print("Major ");
+  Serial.println(major, HEX);
+  Serial.print("Minor ");
+  Serial.println(minor, HEX);
+  memcpy(uuid128, &(report->data.p_data[5]), 16);
+  for(int i = 0; i < 16; i++){
+    Serial.print(uuid128[i], HEX);
+    Serial.print(" ");
   }
+  // does p_data contain the bluetooth UUID?
+//  for(int i = 0; i < report->data.len; i++){
+//    Serial.print(report->data.p_data[i]);
+//    Serial.print(" ");
+//  }
+  Serial.println();
 
   // For Softdevice v6: after received a report, scanner will be paused
   // We need to call Scanner resume() to continue scanning
@@ -43,16 +69,16 @@ void setup()
 {
   Serial.begin(115200);
  
-  Serial.println("Bluefruit52 Beacon Example");
+  Serial.println("Friend Finder Demo");
  
   Bluefruit.begin();
-  Bluefruit.setName("Bluefruit52");
+  Bluefruit.setName("Friend Finder");
  
   // Manufacturer ID is required for Manufacturer Specific Data
   beacon.setManufacturer(MANUFACTURER_ID);
  
   // Setup the advertising packet
-    // Set the beacon payload using the BLEBeacon class populated
+  // Set the beacon payload using the BLEBeacon class populated
   // earlier in this example
   Bluefruit.Advertising.setBeacon(beacon);
  
@@ -62,6 +88,7 @@ void setup()
   // Use the optinal secondary Scan Response packet for 'Name' instead
   Bluefruit.ScanResponse.addName();
   Bluefruit.Scanner.setRxCallback(scan_callback);
+  Bluefruit.Scanner.filterRssi(-80); // Only run callback if rssi > 80
   // Start advertising
   Bluefruit.Advertising.start();
 }
@@ -74,11 +101,11 @@ void loop()
   Serial.println("Stop Scan, Start Adv");
   Bluefruit.Scanner.stop();
   Bluefruit.Advertising.start();
-  delay(500);
+  delay(1000);
   digitalToggle(LED_BUILTIN);
   Serial.println("Stop Adv, Start Scan");
   Bluefruit.Advertising.stop();
   Bluefruit.Scanner.start();
-  delay(500);
+  delay(1000);
   
 }
