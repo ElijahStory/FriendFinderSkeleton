@@ -6,7 +6,8 @@
 // https://www.bluetooth.com/specifications/assigned-numbers/company-identifiers
 // 0x004C is Apple (for example)
 #define MANUFACTURER_ID   0x004C 
- 
+#define MAJOR 0x000A
+#define MINOR 0x0000
 // AirLocate UUID: E2C56DB5-DFFB-48D2-B060-D0F5A71096E0
 uint8_t beaconUuid[16] = 
 { 
@@ -18,28 +19,40 @@ uint8_t beaconUuid[16] =
 
 // A valid Beacon packet consists of the following information:
 // UUID, Major, Minor, RSSI @ 1M
-BLEBeacon beacon(beaconUuid, 0x000A, 0x0000, -54);
+BLEBeacon beacon(beaconUuid, MAJOR, MINOR, -54);
  
 void scan_callback(ble_gap_evt_adv_report_t *report)
 {
+  // Our packet length is 30 bytes long, break away
+  // if the report isn't the correct size
+  if(report->data.len != 30) return;
 
   uint16_t manufacturer;
-  
   uint8_t  beacon_type;
   uint8_t  beacon_len;
-
   uint8_t  uuid128[16];
   uint16_t major;
   uint16_t minor;
   int8_t   rssi_at_1m;
-  // This section is straight up WRONG
-  manufacturer = (report->data.p_data[3] << 16) | (report->data.p_data[2]);
-  beacon_type = report->data.p_data[4];
-  // MAJOR bytes: 22, 23 MINOR bytes: 24, 25)
-  major = (report->data.p_data[22] << 16) | (report->data.p_data[23]);
-  minor = (report->data.p_data[24] << 16) | (report->data.p_data[25]);
+
+  // Extract data from report. 
+  manufacturer = (report->data.p_data[6] << 16) | (report->data.p_data[5]);
+  beacon_type = report->data.p_data[7];
   
-  Serial.print("man: ");
+  // MAJOR bytes: 25, 26 MINOR bytes: 27, 28)
+  major = (report->data.p_data[25] << 8) | (report->data.p_data[26]);
+  minor = (report->data.p_data[27] << 8) | (report->data.p_data[28]);
+
+  // Copy UUID from report (starts at 9th byte)
+  memcpy(uuid128, &(report->data.p_data[9]), 16);
+
+  // Print Everything in HEX
+  for(int i = 0; i < 16; i++){
+    Serial.print(uuid128[i], HEX);
+    Serial.print(" ");
+  }
+  Serial.println();
+  Serial.print("Manufacturer: ");
   Serial.println(manufacturer, HEX);
   Serial.print("Type: ");
   Serial.println(beacon_type, HEX);
@@ -47,17 +60,7 @@ void scan_callback(ble_gap_evt_adv_report_t *report)
   Serial.println(major, HEX);
   Serial.print("Minor ");
   Serial.println(minor, HEX);
-  memcpy(uuid128, &(report->data.p_data[5]), 16);
-  for(int i = 0; i < 16; i++){
-    Serial.print(uuid128[i], HEX);
-    Serial.print(" ");
-  }
-  // does p_data contain the bluetooth UUID?
-//  for(int i = 0; i < report->data.len; i++){
-//    Serial.print(report->data.p_data[i]);
-//    Serial.print(" ");
-//  }
-  Serial.println();
+  
 
   // For Softdevice v6: after received a report, scanner will be paused
   // We need to call Scanner resume() to continue scanning
