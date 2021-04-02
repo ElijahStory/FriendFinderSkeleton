@@ -1,13 +1,20 @@
 #include <bluefruit.h>
- 
+#include "NRF52TimerInterrupt.h"
 // Beacon uses the Manufacturer Specific Data field in the advertising
 // packet, which means you must provide a valid Manufacturer ID. Update
 // the field below to an appropriate value. For a list of valid IDs see:
 // https://www.bluetooth.com/specifications/assigned-numbers/company-identifiers
 // 0x004C is Apple (for example)
-#define MANUFACTURER_ID   0x004C 
-#define MAJOR 0x000A
-#define MINOR 0x0000
+#define MANUFACTURER_ID         0x004C 
+#define MAJOR                   0x000A
+#define MINOR                   0x0000
+
+// Timer Interrupt Constants
+#define STATE_SCANNING          0
+#define STATE_ADVERTISING       1
+#define TIMER_INTERVAL_MS      1000  
+
+
 // AirLocate UUID: E2C56DB5-DFFB-48D2-B060-D0F5A71096E0
 uint8_t beaconUuid[16] = 
 { 
@@ -20,7 +27,15 @@ uint8_t beaconUuid[16] =
 // A valid Beacon packet consists of the following information:
 // UUID, Major, Minor, RSSI @ 1M
 BLEBeacon beacon(beaconUuid, MAJOR, MINOR, -54);
- 
+
+// Setup Variables for timer interrupts
+NRF52Timer timer0(NRF_TIMER_1);
+// State defines wether we are scanning or advertsing
+// state = 0 --> scanning
+// state = 1 --> advertising 
+volatile uint8_t state;
+
+
 void scan_callback(ble_gap_evt_adv_report_t *report)
 {
   // Our packet length is 30 bytes long, break away
@@ -73,7 +88,6 @@ void setup()
   Serial.begin(115200);
  
   Serial.println("Friend Finder Demo");
- 
   Bluefruit.begin();
   Bluefruit.setName("Friend Finder");
  
