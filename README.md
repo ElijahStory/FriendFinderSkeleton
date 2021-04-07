@@ -7,7 +7,7 @@ You will need to write three functions, `match()`, `pack()` and `unpack()`. Alon
 ### unpack() / unpack()
 These two will be discussed and outlined as a class, becuase the way we pack and unpack data is going to be very important in making sure all the Friend Finder devices communicate properly. 
 
-`pack()` will be passed a `friendfinder_data` struct and return a `uint32_t` that is the packed data, where `unpack()` will take a `uint32_t` that is the packed data and return a `friendfinder_data` struct. 
+`pack()` will be passed a `friendfinder_data` struct and return a `uint64_t` that is the packed data, where `unpack()` will take a `uint64_t` that is the packed data and return a `friendfinder_data` struct. 
 
 ### match()
 Match is the function that is used for compairing one friend finder device with another. Match by default returns a bool (true or false) but if you wanted, you could also do it as levels of matching using an integer. 
