@@ -1,7 +1,7 @@
 # Friend Finder Skeleton
 ### NMD 342
 
-This is the skeleton code for the FriendFinder project. The main file you will be writing in is [FriendFinderSkeleton.ino](https://github.com/jacobmealey/FriendFinderSkeleton/blob/main/FriendFinderBackEnd.ino)
+This is the skeleton code for the FriendFinder project. The main file you will be writing in is [FriendFinderSkeleton.ino](https://github.com/jacobmealey/FriendFinderSkeleton/blob/main/FriendFinderSkeleton.ino)
 You will need to write three functions, `match()`, `pack()` and `unpack()`. Along with the three functions mentioned before you will also need a struct called `friendfinder_data` which is a structure that will orgonize the sections of the friend finder system. 
 
 ### unpack() / unpack()
