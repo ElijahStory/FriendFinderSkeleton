@@ -31,19 +31,18 @@ uint8_t beaconUuid[16] =
 BLEBeacon beacon(beaconUuid);
 
 uint32_t volatile scanned; 
+uint16_t volatile matched_zodiacs;
 uint16_t scan_delay;
 
 
 
-void setupFriendFinder(uint64_t settings, uint16_t del)
+void setupFriendFinder(uint16_t zodiac, uint16_t del)
 {
   Bluefruit.begin();
   Bluefruit.setName("Friend Finder");
- 
-  // Settings is a 32 bit integer split into four different sections
-  // |   Major Val     |     Minor Val     |       Man. ID       |   0x0000 |  
-  beacon.setManufacturer((settings >> 16) && 0xFFFF);
-  beacon.setMajorMinor((settings >> 32) && 0xFFFF, (settings >> 48) && 0xFFFF);
+  // Arbitrary major and manufacterur used for matching :)
+  beacon.setManufacturer(0x004c);
+  beacon.setMajorMinor(0xF0F0, 1 << zodiac);
   
   // Setup the advertising packet
   // Set the beacon payload using the BLEBeacon class populated
@@ -64,7 +63,7 @@ void setupFriendFinder(uint64_t settings, uint16_t del)
 }
 
 
-int scanAndAdvertise(void)
+uint16_t scanAndAdvertise(void)
 {
   digitalToggle(LED_BUILTIN);
   Serial.println("Stop Scan, Start Adv");
@@ -76,7 +75,7 @@ int scanAndAdvertise(void)
   Bluefruit.Advertising.stop();
   Bluefruit.Scanner.start();
   delay(scan_delay);
-  return scanned;
+  return matched_zodiacs;
 }
 
 
@@ -92,6 +91,7 @@ void scan_callback(ble_gap_evt_adv_report_t *report)
   uint8_t  uuid128[16];
   uint16_t major;
   uint16_t minor;
+  uint16_t incoming_zodiac; // This is the one that MATTERS
   int8_t   rssi_at_1m;
 
   // Extract data from report. 
@@ -101,7 +101,6 @@ void scan_callback(ble_gap_evt_adv_report_t *report)
   // MAJOR bytes: 25, 26 MINOR bytes: 27, 28)
   major = (report->data.p_data[25] << 8) | (report->data.p_data[26]);
   minor = (report->data.p_data[27] << 8) | (report->data.p_data[28]);
-
   // Copy UUID from report (starts at 9th byte)
   memcpy(uuid128, &(report->data.p_data[9]), 16);
 
@@ -120,10 +119,13 @@ void scan_callback(ble_gap_evt_adv_report_t *report)
   Serial.print("Minor ");
   Serial.println(minor, HEX);
 
+  // The zodiac is stored in the minor value of the packet.
+  incoming_zodiac = minor;
+  
   // Update scanned!
   // Only one, perhaps we should return a pointer in memory? 
   scanned  |= major << 24 | minor << 16 | manufacturer << 8;
-
+  matched_zodiacs |= incoming_zodiac;
   // For Softdevice v6: after received a report, scanner will be paused
   // We need to call Scanner resume() to continue scanning
   Bluefruit.Scanner.resume();
