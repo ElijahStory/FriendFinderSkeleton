@@ -7,6 +7,7 @@
 
 #include <bluefruit.h>
 #include <Adafruit_NeoPixel.h>
+
 // NEOPIXEL ring definitions 
 #define RING_SIZE 24
 #define RING_PIN 3
@@ -48,8 +49,12 @@ uint8_t zodiac_compatibility[12][12] =
 // matching
 // delay between scans in scandAndAdvertise()
 uint16_t del = 500; // delay in mS, note that it doesn't work well under 300.
+
+
 uint8_t myZodiac = LIBRA;
+
 uint16_t scanned_zodiac;
+
 void setup() 
 {
   Serial.begin(115200);
@@ -63,12 +68,21 @@ void loop()
   // Scanned Value is the upper 24 bits of the 32 bit integer, this functions
   // takes about 2 * del to run. 
   scanned_zodiac = scanAndAdvertise();
-  
+  match();
   // if there is a match turn all the lights red.
-  if(match()){
-    for(int i = 0; i < RING_SIZE; i++){
-      strip.setPixelColor(i, strip.Color(127, 0, 0));
+  for(int i = 0; i < 5; i++){
+    int currentZodiacMatch = compatibilities[i];
+    
+    for(int j = 0; j < currentZodiacMatch / 10; j++){  
+      for(int k = 0; k < RING_SIZE; k++){
+        strip.setPixelColor(k, strip.Color(127, 0, 0));
+      }
+      delay(100);
+      for(int k = 0; k < RING_SIZE; k++){
+        strip.setPixelColor(k, strip.Color(0, 0, 0));
+      }
     }
+    
     strip.show();
   }
 }
@@ -79,7 +93,7 @@ uint8_t match()
   for(uint8_t i = 0; i < 12; i++){
     if((scanned_zodiac >> i) & 1UL){
       compatibilities[compat_count] =  zodiac_compatibility[myZodiac][i];
-      compat_count;
+      compat_count++;
     }
   } 
 }

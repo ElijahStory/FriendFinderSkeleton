@@ -32,6 +32,7 @@ BLEBeacon beacon(beaconUuid);
 
 uint32_t volatile scanned; 
 uint16_t volatile matched_zodiacs;
+// 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
 uint16_t scan_delay;
 
 
@@ -127,6 +128,7 @@ void scan_callback(ble_gap_evt_adv_report_t *report)
   // Only one, perhaps we should return a pointer in memory? 
   scanned  |= major << 24 | minor << 16 | manufacturer << 8;
   matched_zodiacs |= incoming_zodiac;
+  // 0 0 0 0 0 0 0 1 0 0 0 0 
   // For Softdevice v6: after received a report, scanner will be paused
   // We need to call Scanner resume() to continue scanning
   Bluefruit.Scanner.resume();
