@@ -46,7 +46,7 @@ uint8_t zodiac_compatibility[12][12] =
 // matching
 // delay between scans in scandAndAdvertise()
 uint16_t del = 500; // delay in mS, note that it doesn't work well under 300.
-uint16_t myZodiac = LIBRA;
+uint8_t myZodiac = LIBRA;
 uint16_t scanned_zodiac;
 void setup() 
 {
@@ -72,11 +72,11 @@ void loop()
 }
 
 
-int match()
+uint8_t match()
 {
   for(uint8_t i = 0; i < 12; i++){
     if((scanned_zodiac >> i) & 1UL){
-      return zodiac_compatibility[myZodiac, i];
+      return zodiac_compatibility[myZodiac][i];
     }
   } 
 }
