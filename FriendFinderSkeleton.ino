@@ -63,8 +63,10 @@ void setup()
 }
  
 
-void loop() 
+void loop()  
 {
+  Serial.print("LOOP");
+  delay(100);
   // Scanned Value is the upper 24 bits of the 32 bit integer, this functions
   // takes about 2 * del to run. 
   scanned_zodiac = scanAndAdvertise();
@@ -90,7 +92,8 @@ void loop()
 
 uint8_t match()
 {
-  for(uint8_t i = 0; i < 12; i++){
+  for(int i = 0; i < 12; i++){    
+    delay(100);
     if((scanned_zodiac >> i) & 1UL){
       compatibilities[compat_count] =  zodiac_compatibility[myZodiac][i];
       compat_count++;
