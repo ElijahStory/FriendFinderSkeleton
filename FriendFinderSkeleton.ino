@@ -26,6 +26,8 @@ Adafruit_NeoPixel strip(RING_SIZE, RING_PIN, NEO_RGB + NEO_KHZ800);
 #define AQUARIUS         10
 #define PISCES           11
 
+uint8_t compatibilities[5];
+uint8_t compat_count = 0;
 uint8_t zodiac_compatibility[12][12] = 
 {
   {50, 38, 83, 42, 97, 63, 85, 50, 93, 47, 78, 67},
@@ -76,7 +78,8 @@ uint8_t match()
 {
   for(uint8_t i = 0; i < 12; i++){
     if((scanned_zodiac >> i) & 1UL){
-      return zodiac_compatibility[myZodiac][i];
+      compatibilities[compat_count] =  zodiac_compatibility[myZodiac][i];
+      compat_count;
     }
   } 
 }

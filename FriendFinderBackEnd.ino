@@ -65,6 +65,7 @@ void setupFriendFinder(uint16_t zodiac, uint16_t del)
 
 uint16_t scanAndAdvertise(void)
 {
+  matched_zodiacs = 0;
   digitalToggle(LED_BUILTIN);
   Serial.println("Stop Scan, Start Adv");
   Bluefruit.Scanner.stop();
