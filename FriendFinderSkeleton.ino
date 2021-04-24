@@ -29,6 +29,10 @@ Adafruit_NeoPixel strip(RING_SIZE, RING_PIN, NEO_RGB + NEO_KHZ800);
 
 uint8_t compatibilities[5];
 uint8_t compat_count = 0;
+Color zodiacColors[12] = {Color(255, 0, 0), Color(255, 128, 0), Color(255, 255, 0), Color(128, 255, 0), 
+                          Color(0, 255, 0), Color(0, 255, 128), Color(0, 255, 255), Color(0, 128, 255),
+                          Color(0, 0, 255), Color(128, 0, 255), Color(255, 0, 255), Color(255, 0, 128)};
+
 uint8_t zodiac_compatibility[12][12] = 
 {
   {50, 38, 83, 42, 97, 63, 85, 50, 93, 47, 78, 67},
@@ -44,6 +48,11 @@ uint8_t zodiac_compatibility[12][12] =
   {78, 58, 85, 27, 68, 30, 90, 73, 90, 68, 45, 45},
   {67, 85, 53, 98, 38, 88, 88, 97, 63, 88, 45, 60}
 };
+
+int spacer[3] = {0, 4, 20};
+int myColor[3] = {1, 2, 3};
+int matchColor[3] = {21, 22, 23};
+int matchValue[5] = {5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19};
 
 // Some friend finder settings. upper 48 bits are using for 
 // matching
@@ -85,10 +94,20 @@ void loop()
       }
     }
     
+  if(match()){
+    colorRing(spacer, Color(0, 0, 0));
+    colorRing(myColor, zodiacColors[myZodiac]);
+    colorRing(matchColor, zodiacColors[scanned_zodiac]);
+    colorRing(matchValue, zodiacColors[Color(0, 0, 0)]);
     strip.show();
   }
 }
 
+void colorRing(int section[], Color color){
+  for(int i = 0; i < section.length; i++){
+      strip.setPixelColor(i, strip.color);
+  }
+}
 
 uint8_t match()
 {
